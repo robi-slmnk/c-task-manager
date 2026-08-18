@@ -14,7 +14,11 @@ typedef struct{
     
 }Process;
 
-Process* scanProc();
-void printProc(Process* Proc);
+void scanProc();
+void makeProcess(char process_id[], char path[]);
+
+int parser(char path[]);
+int isDigit(char a);
+
 
 #endif
