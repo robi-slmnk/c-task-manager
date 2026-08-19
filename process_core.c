@@ -14,6 +14,7 @@ void scanProc()
     char procPath[50];  
     struct dirent * scann = 0;
     process_manager *process_list;
+    int marker = 0;
 
     offset = 0;
     process_list = initialAllocation();
@@ -41,22 +42,31 @@ void scanProc()
             }
 
         }
-
-        process_display(process_list, max_screen_height, offset);
+        process_display(process_list, max_screen_height, offset, marker);
         closedir(dir);
+        if(marker >= process_list->process_count)
+                marker = process_list->process_count-1;
         pressed_key = getch(); 
         switch(pressed_key)
         {
             case KEY_UP:
-                if(offset > 0)
+                if(marker > 0)
+                {
+                    marker--;
+                }
+                if(offset > 0 && (marker < offset))
                 {
                     offset --;
                 }
                 break;
             case KEY_DOWN:
-                if(offset < process_list->process_count - max_screen_height)
+                if(marker < process_list->process_count - 1)
                 {
-                    offset ++;
+                    marker++;
+                }
+                if(marker >= offset + max_screen_height)
+                {
+                    offset++;
                 }
                 break;
             case 'q':
@@ -97,7 +107,8 @@ int parser(char path[], process_manager *process_list, char process_id[])
     }
 
     data.cpu_usage = 0;
-    data.memory_kbb[0] = data.PID[0] = data.pName[0] = '\0';
+    strcpy(data.memory_kbb, "0 kB"); 
+    data.PID[0] = data.pName[0] = '\0';
     strcpy(data.PID,process_id);
 
     while(fgets(buff,sizeof(buff),err))
@@ -107,7 +118,7 @@ int parser(char path[], process_manager *process_list, char process_id[])
                 strcpy(data.pName,buff+5);
                 stringExtracter(data.pName);
             }
-        else if(strncmp(buff,"VmRSS:",6) == 0)
+        if(strncmp(buff,"VmRSS:",6) == 0)
             {
                 strcpy(data.memory_kbb,buff+6);
                 stringExtracter(data.memory_kbb);
@@ -121,7 +132,7 @@ int parser(char path[], process_manager *process_list, char process_id[])
             
     }
     process_add(process_list, data);
-    
+
     if(fclose(err) != 0)
     {
         mvprintw(0, 2, "Error closing file.");
@@ -145,12 +156,26 @@ int display_settings()
     return maxy;
 }
 
-void process_display(process_manager *process_list, int max_screen_height, int offset)
+void process_display(process_manager *process_list, int max_screen_height, int offset, int marker)
 {
     if(process_list->list)
     {
+        int current = 0, flag = 0;;
         for(int i = 0 ; i < max_screen_height - 1 && (i + offset) < process_list->process_count ; i++)
-            mvprintw(i, 1, "Process ID   %s   Name   %s  Memory   %s \n", process_list->list[i + offset].PID, process_list->list[i + offset].pName, process_list->list[i + offset].memory_kbb);
+        {
+            flag = 0;
+            current = i + offset;
+            if(current == marker  )
+            {
+                flag = 1;
+                attron(A_REVERSE);
+            }
+            mvprintw(i, 1, "Process ID   %s   Name   %s  Memory %s", process_list->list[current].PID, process_list->list[current].pName, process_list->list[current].memory_kbb);
+            if(flag)
+            {
+                attroff(A_REVERSE);
+            }
+        }
     }
-    else mvprintw(0, 2, "There are no processes running!\n");
+    else mvprintw(0, 2, "There are no processes running!");
 } 
