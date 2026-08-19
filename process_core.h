@@ -23,7 +23,7 @@ typedef struct{
 void scanProc();
 void makeProcess(char process_id[], char path[]);
 void process_add(process_manager *p, Process data);
-void process_display(process_manager *process_list, int max_screen_height, int offset);
+void process_display(process_manager *process_list, int max_screen_height, int offset, int marker);
 
 int display_settings();
 int parser(char path[],process_manager *process_list, char process_id[]);

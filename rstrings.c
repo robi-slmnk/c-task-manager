@@ -35,4 +35,5 @@ void stringExtracter(char a[])
         else break;
     }
     strcpy(a, a + spaceCounter );
+    a[strlen(a) - 1] = '\0';
 }
