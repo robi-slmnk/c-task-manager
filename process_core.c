@@ -5,36 +5,43 @@
 #include <string.h>
 #include "rstrings.h"
 #include "mem_manager.h"
+#include <unistd.h>
 
 void scanProc()
 {
-    DIR *dir = opendir("/proc");
     int flag;
     char procPath[50];  
     struct dirent * scann = 0;
     process_manager *process_list;
 
     process_list = initialAllocation();
-    
-    if(dir == NULL)
-    {   
-        printf("Error opening procceses");
-        return;  
-    }
 
-    while((scann = readdir(dir)) != NULL)   //searching for PIDs
-        {
-            flag = isDigitString(scann->d_name);            //checking if the PID is made only from digits
+    while(1)
+    {  
+        DIR *dir = opendir("/proc");
 
-            if(flag)
-            {
-                makeProcess(scann->d_name, procPath);       //assembling the path of the process if the PID is made only from digits
-                parser(procPath,process_list,scann->d_name);                           //extracting the name of the process ,
-            }
-
+        if(dir == NULL)
+        {   
+            return;  
         }
-    process_show(process_list);
-    closedir(dir);
+    
+            printf("\e[1;1H\e[2J");
+            while((scann = readdir(dir)) != NULL)   //searching for PIDs
+            {
+                flag = isDigitString(scann->d_name);            //checking if the PID is made only from digits
+
+                if(flag)
+                {
+                    makeProcess(scann->d_name, procPath);       //assembling the path of the process if the PID is made only from digits
+                    parser(procPath,process_list,scann->d_name);                           //extracting the name of the process ,
+                }
+
+            }
+        process_display(process_list);
+        process_list->process_count = 0;
+        closedir(dir);
+        sleep(1);
+        }
     return ;
 
 }
@@ -86,6 +93,8 @@ int parser(char path[], process_manager *process_list, char process_id[])
             
     }
     process_add(process_list, data);
+    data.cpu_usage = 0;
+    data.memory_kbb[0] = data.PID[0] = data.pName[0] = '\0';
 
     if(fclose(err) != 0)
     {
@@ -103,11 +112,11 @@ void process_add(process_manager *p, Process data)
 }
 
 
-void process_show(process_manager *process_list)
+void process_display(process_manager *process_list)
 {
     if(process_list->list)
     {
-        for(int i = 0 ; i <= process_list->process_count ; i++)
+        for(int i = 0 ; i < process_list->process_count ; i++)
             printf("Process ID   %s   Name   %s  Memory   %s \n", process_list->list[i].PID, process_list->list[i].pName, process_list->list[i].memory_kbb);
     }
     else printf("There are no processes running!\n");
