@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "process_core.h"
+#include "mem_manager.h"
 
 process_manager *initialAllocation()
 {
@@ -34,14 +35,40 @@ void processReallocation(process_manager *p)
 }
 void processDeletion(process_manager *p)
 {
-    if(p->list)
+    if(p != NULL)
     {
-        for(int i = 0 ; i <= p->process_count ; i++)
+        if(p->list != NULL)
         {
             free(p->list);
             p->list = NULL;
         }
-        free(p->list);
+        free(p);       
     }
+}
 
+int sort_string(const void *a, const void *b)
+{
+    Process *A = (Process*)a;
+    Process *B = (Process*)b;
+
+    int len_a, len_b;
+    
+    len_a = strlen(A->memory_kbb);
+    len_b = strlen(B->memory_kbb);
+    
+    if(len_a == len_b)
+    {
+        return strcmp(B->memory_kbb, A->memory_kbb);
+    }
+    else
+    {
+        if(len_a > len_b)
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
+    }
 }
