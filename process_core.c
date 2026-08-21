@@ -7,6 +7,7 @@
 #include "mem_manager.h"
 #include <unistd.h>
 #include <ncurses.h>
+#include <signal.h>
 
 void scanProc()
 {
@@ -15,6 +16,7 @@ void scanProc()
     struct dirent * scann = 0;
     process_manager *process_list;
     int marker = 0;
+    int refresh_speed = 1000;
 
     offset = 0;
     process_list = initialAllocation();
@@ -42,6 +44,7 @@ void scanProc()
             }
 
         }
+        qsort(process_list->list, process_list->process_count, sizeof(Process), sort_string);
         process_display(process_list, max_screen_height, offset, marker);
         closedir(dir);
         if(marker >= process_list->process_count)
@@ -68,6 +71,15 @@ void scanProc()
                 {
                     offset++;
                 }
+                break;
+            case 'p':
+            case 'P':
+                refresh_speed = -refresh_speed;
+                timeout(refresh_speed);
+                break;
+            case 'k':
+            case 'K':
+                end_process(process_list, marker);
                 break;
             case 'q':
             case 'Q':
@@ -170,12 +182,23 @@ void process_display(process_manager *process_list, int max_screen_height, int o
                 flag = 1;
                 attron(A_REVERSE);
             }
-            mvprintw(i, 1, "Process ID   %s   Name   %s  Memory %s", process_list->list[current].PID, process_list->list[current].pName, process_list->list[current].memory_kbb);
+            mvprintw(i, 1, "Process ID\t%s\tName\t%s\t\t\t\t\tMemory\t%s", process_list->list[current].PID, process_list->list[current].pName, process_list->list[current].memory_kbb);
             if(flag)
             {
                 attroff(A_REVERSE);
             }
         }
+    }
+    else mvprintw(0, 2, "There are no processes running!");
+} 
+
+void end_process(process_manager *process_list, int marker)
+{
+    if(process_list->list)
+    {
+        long long t_id;
+                t_id = atoi(process_list->list[marker].PID);
+                kill(t_id, 9);   
     }
     else mvprintw(0, 2, "There are no processes running!");
 } 
