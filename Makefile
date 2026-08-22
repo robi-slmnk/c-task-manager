@@ -1,3 +1,5 @@
+opt2: opt1
+	./task_manager
 opt1:
 	clang -Wall -c main.c -o main.o
 	clang -Wall -c mem_manager.c -o mem_manager.o
