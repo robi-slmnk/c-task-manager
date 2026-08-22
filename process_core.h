@@ -21,13 +21,20 @@ typedef struct{
     int mem_cap;
 }process_manager;
 
+typedef struct{
+    unsigned long long idle;
+    unsigned long long active;
+}process_stat;
 void scanProc();
 void makeProcess(char process_id[], char path[]);
 void process_add(process_manager *p, Process data);
-void process_display(process_manager *process_list, int max_screen_height, int offset, int marker);
+void process_display(process_manager *process_list, int max_screen_height, int offset, int marker, float percentage);
 void end_process(process_manager *process_list, int marker);
 
 int display_settings();
-int parser(char path[],process_manager *process_list, char process_id[]);
+
+int process_parser(char path[],process_manager *process_list, char process_id[]);
+process_stat process_math(char buff[]);
+process_stat stats_parser();
 
 #endif
